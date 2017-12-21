@@ -8,7 +8,7 @@
 - 4、变声效果。
 
 简单的介绍一下实现：
-[高仿QQ录音功能模块实现](https://juejin.im/post/5a3136a6f265da43310dd1d4) 
+[高仿QQ录音功能模块实现](https://juejin.im/post/5a3bc79ff265da43152415f6) 
 
 ![对讲界面](https://github.com/ChavezChen/QQVoiceDemo/blob/master/对讲界面.gif)
 
