@@ -302,6 +302,7 @@ static CGFloat const maxScale = 0.45;
             NSLog(@"发送录音111111");
         }else {
             NSLog(@"录音时间太短");
+            [CWFlieManager removeFile:[CWRecorder shareInstance].recordPath];
         }
     });
 }

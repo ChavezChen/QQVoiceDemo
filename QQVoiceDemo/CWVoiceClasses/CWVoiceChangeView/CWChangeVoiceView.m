@@ -116,6 +116,7 @@
             [self playView];
         }else {
             NSLog(@"录音时间太短");
+            [CWFlieManager removeFile:[CWRecorder shareInstance].recordPath];
         }
     });
     
