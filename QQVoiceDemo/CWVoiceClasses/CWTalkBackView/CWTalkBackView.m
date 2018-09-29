@@ -17,13 +17,16 @@
 #import "CWFlieManager.h"
 
 //----------------------对讲---------------------------------//
-@interface CWTalkBackView ()<CWRecorderDelegate>
+@interface CWTalkBackView ()<CWRecorderDelegate, UIGestureRecognizerDelegate>
 @property (nonatomic, weak) CWRecordStateView *stateView;
 @property (nonatomic, weak) CWVoiceButton *micButton;    // 录音按钮
 @property (nonatomic, weak) CWVoiceButton *playButton;   // 播放按钮
 @property (nonatomic, weak) CWVoiceButton *cancelButton; // 取消按钮
 @property (nonatomic, weak) CWAudioPlayView *playView;   // 播放界面
 @property (nonatomic, weak) UIImageView *voiceLine; // aio_voice_line
+
+@property (nonatomic, weak) UIPanGestureRecognizer *pan; // 手势
+
 @end
 
 static CGFloat const maxScale = 0.45;
@@ -114,6 +117,8 @@ static CGFloat const maxScale = 0.45;
         [btn addTarget:self action:@selector(sendRecorde:) forControlEvents:UIControlEventTouchUpInside];
         // 拖动手势
         UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
+        pan.delegate = self;
+        _pan = pan;
         [btn addGestureRecognizer:pan];
         
         btn.cw_centerX = self.cw_width / 2.0;
@@ -186,6 +191,15 @@ static CGFloat const maxScale = 0.45;
         self.stateView.recordState = CWRecordStateDefault;
         
     }
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if ( [gestureRecognizer isEqual:_pan] ) {
+        if (!self.micButton.isSelected) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 #pragma mark 按钮的形变以及动画
