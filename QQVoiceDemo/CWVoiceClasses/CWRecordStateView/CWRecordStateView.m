@@ -350,10 +350,24 @@ static CGFloat const levelMargin = 2.0;
     [self.playTimer invalidate];
     [self.audioTimer invalidate];
     
+    [self.allLevels removeAllObjects];
     self.allLevels = [[CWRecordModel shareInstance].levels mutableCopy];
     [self.currentLevels removeAllObjects];
     
-    for (NSInteger i = self.allLevels.count - 1 ; i >= self.allLevels.count - 10 ; i--) {
+    /*
+     * 当音频时间特别短时，self.allLevels.count 可能小于 10， 故做容错处理
+     *     NSInteger checkValue = self.allLevels.count >= 10 ? ( self.allLevels.count - 10 ) : 0;
+     *     for (NSInteger i = self.allLevels.count - 1 ; i >= checkValue ; i--) {
+     *          // ...
+     *     }
+     
+     原代码
+     //    for (NSInteger i = self.allLevels.count - 1 ; i >= self.allLevels.count - 10 ; i--) {
+     //         // ...
+     //     }
+     */
+    NSInteger checkValue = self.allLevels.count >= 10 ? ( self.allLevels.count - 10 ) : 0;
+    for (NSInteger i = self.allLevels.count - 1 ; i >= checkValue ; i--) {
         CGFloat l = 0.05;
         if (i >= 0) {
             l = [self.allLevels[i] floatValue];
@@ -412,7 +426,9 @@ static CGFloat const levelMargin = 2.0;
     CGFloat level = [self.allLevels.firstObject floatValue];
     [self.currentLevels removeLastObject];
     [self.currentLevels insertObject:@(level) atIndex:0];
-    [self.allLevels removeObjectAtIndex:0];
+    if ( self.allLevels.count ) {
+        [self.allLevels removeObjectAtIndex:0];
+    }
     [self updateLevelLayer];
 //    NSLog(@"==============================================");
 }
