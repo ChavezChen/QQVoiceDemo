@@ -22,13 +22,19 @@ typedef NS_ENUM(NSInteger,CWRecordState) {
     CWRecordStatePlay               // 播放
 } ;
 
+#define WeakSelf(type)  __weak typeof(type) weak##type = type;
 
+#define MaxRecordTime 6
 
 @interface CWRecordStateView : UIView
 
 @property (nonatomic,assign) CWRecordState recordState; // 录音状态
 
 @property (nonatomic,copy) void(^playProgress)(CGFloat progress);
+
+@property (nonatomic,copy) void(^recordDurationProgress)(NSInteger progress);
+
+@property (nonatomic,assign, readonly) NSInteger recordDuration;      // 录音时长
 
 // 开始录音
 - (void)beginRecord;

@@ -81,6 +81,10 @@ static CGFloat const maxScale = 0.45;
     if (_stateView == nil) {
         CWRecordStateView *stateView = [[CWRecordStateView alloc] initWithFrame:CGRectMake(0, 10, self.cw_width, 50)];
 //        stateView.backgroundColor = [UIColor blueColor];
+        WeakSelf(self)
+        stateView.recordDurationProgress = ^(NSInteger progress) {
+            [weakself handleRecordDurationCallback:progress];
+        };
         [self addSubview:stateView];
         _stateView = stateView;
     }
@@ -353,6 +357,14 @@ static CGFloat const maxScale = 0.45;
 - (void)recorderFailed:(NSString *)failedMessage {
     self.stateView.recordState = CWRecordStateDefault;
     NSLog(@"失败：%@",failedMessage);
+}
+
+#pragma mark -
+- (void)handleRecordDurationCallback:(NSInteger)recordDuration {
+    NSLog(@"recordDuration -- %@", @(recordDuration));
+    if ( recordDuration > MaxRecordTime ) {
+        [self sendRecorde:_micButton];
+    }
 }
 
 @end

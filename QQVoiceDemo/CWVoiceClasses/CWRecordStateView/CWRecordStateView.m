@@ -106,19 +106,31 @@ static CGFloat const levelMargin = 2.0;
     _recordDuration++;
     
     [self updateTimeLabel];
+    
+    if ( _recordDurationProgress ) {
+        _recordDurationProgress(_recordDuration);
+    }
 }
 
 
 - (void)updateTimeLabel {
-    NSString *text ;
-    if (_recordDuration < 60) {
-        text = [NSString stringWithFormat:@"0:%02zd",_recordDuration];
-    }else {
-        NSInteger minutes = _recordDuration / 60;
-        NSInteger seconed = _recordDuration % 60;
-        text = [NSString stringWithFormat:@"%zd:%02zd",minutes,seconed];
+    NSString *text = [self getTimeLabelTextWithDuration:_recordDuration];
+    if ( _recordDuration > MaxRecordTime ) {
+        text = [self getTimeLabelTextWithDuration:6];
     }
     self.timeLabel.text = text;
+}
+
+- (NSString *)getTimeLabelTextWithDuration:(NSInteger)duration {
+    NSString *text ;
+    if (duration < 60) {
+        text = [NSString stringWithFormat:@"0:%02zd",duration];
+    }else {
+        NSInteger minutes = duration / 60;
+        NSInteger seconed = duration % 60;
+        text = [NSString stringWithFormat:@"%zd:%02zd",minutes,seconed];
+    }
+    return text;
 }
 
 - (void)updateMeter {

@@ -21,6 +21,8 @@
 @property (nonatomic, weak) UIButton *voiceChangeBtn;    // 录音按钮
 @property (nonatomic,weak) CWVoiceChangePlayView *playView;
 
+@property (nonatomic,assign) BOOL isRecordMaxTime;
+
 @end
 
 @implementation CWChangeVoiceView
@@ -35,6 +37,8 @@
 }
 
 - (void)setupSubviews {
+    _isRecordMaxTime = NO;
+
     [self stateView];
     [self voiceChangeBtn];
 //    [self playView];
@@ -57,6 +61,10 @@
     if (_stateView == nil) {
         CWRecordStateView *stateView = [[CWRecordStateView alloc] initWithFrame:CGRectMake(0, 10, self.cw_width, 50)];
         stateView.recordState = CWRecordStateTouchChangeVoice;
+        WeakSelf(self)
+        stateView.recordDurationProgress = ^(NSInteger progress) {
+            [weakself handleRecordDurationCallback:progress];
+        };
         [self addSubview:stateView];
         _stateView = stateView;
     }
@@ -105,6 +113,13 @@
 }
 
 - (void)endRecord:(UIButton *)btn {
+    NSInteger duration = self.stateView.recordDuration;
+    NSLog(@"duration --- %@", @(duration));
+    
+    if ( _isRecordMaxTime ) {
+        _isRecordMaxTime = NO;
+        return;
+    }
     
     NSTimeInterval t = 0;
     if (![CWRecorder shareInstance].isRecording) {
@@ -161,6 +176,25 @@
 - (void)recorderFailed:(NSString *)failedMessage {
     self.stateView.recordState = CWRecordStateTouchChangeVoice;
     NSLog(@"失败：%@",failedMessage);
+}
+
+#pragma mark -
+- (void)handleRecordDurationCallback:(NSInteger)recordDuration {
+    NSLog(@"recordDuration -- %@", @(recordDuration));
+    if ( recordDuration > 6 ) {
+        
+        self.stateView.recordState = CWRecordStateTouchChangeVoice; // 切换状态为按住变声
+        [[CWRecorder shareInstance] endRecord];  // 停止录音
+        [self.stateView endRecord];    // stateview的动画停止
+        // 设置状态 显示小圆点和三个标签
+        [(CWVoiceView *)self.superview.superview setState:CWVoiceStateDefault];
+        
+        NSLog(@"跳转到变声界面");
+        self.playView = nil;
+        [self playView];
+        
+        _isRecordMaxTime = YES;
+    }
 }
 
 @end
