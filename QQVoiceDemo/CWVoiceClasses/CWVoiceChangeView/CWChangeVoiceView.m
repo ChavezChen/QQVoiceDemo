@@ -84,6 +84,13 @@
 
 #pragma mark - button events
 - (void)startRecorde:(UIButton *)btn {
+    
+    btn.enabled = NO;
+    NSTimeInterval t = 0.3;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(t * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        btn.enabled = YES;
+    });
+    
     [CWRecorder shareInstance].delegate = self;
     // 设置状态 隐藏小圆点和三个标签
     [(CWVoiceView *)self.superview.superview setState:CWVoiceStateRecord];

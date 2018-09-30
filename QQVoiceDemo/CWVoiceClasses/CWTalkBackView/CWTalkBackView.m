@@ -280,6 +280,13 @@ static CGFloat const maxScale = 0.45;
 // 开始录音
 - (void)starRecorde:(UIButton *)btn {
     NSLog(@"开始录音");
+    
+    btn.enabled = NO;
+    NSTimeInterval t = 0.3;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(t * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        btn.enabled = YES;
+    });
+    
     [CWRecorder shareInstance].delegate = self;
     btn.selected = YES;
     
