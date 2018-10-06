@@ -53,6 +53,10 @@
     if (_stateView == nil) {
         CWRecordStateView *stateView = [[CWRecordStateView alloc] initWithFrame:CGRectMake(0, 10, self.cw_width, 50)];
         stateView.recordState = CWRecordStateClickRecord;
+        WeakSelf(self)
+        stateView.recordDurationProgress = ^(NSInteger progress) {
+            [weakself handleRecordDurationCallback:progress];
+        };
         [self addSubview:stateView];
         _stateView = stateView;
     }
@@ -109,6 +113,14 @@
 - (void)recorderFailed:(NSString *)failedMessage {
     self.stateView.recordState = CWRecordStateClickRecord;
     NSLog(@"失败：%@",failedMessage);
+}
+
+#pragma mark -
+- (void)handleRecordDurationCallback:(NSInteger)recordDuration {
+    NSLog(@"recordDuration -- %@", @(recordDuration));
+    if ( recordDuration > MaxRecordTime ) {
+        [self startRecorde:_recordButton];
+    }
 }
 
 @end

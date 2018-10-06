@@ -17,13 +17,16 @@
 #import "CWFlieManager.h"
 
 //----------------------对讲---------------------------------//
-@interface CWTalkBackView ()<CWRecorderDelegate>
+@interface CWTalkBackView ()<CWRecorderDelegate, UIGestureRecognizerDelegate>
 @property (nonatomic, weak) CWRecordStateView *stateView;
 @property (nonatomic, weak) CWVoiceButton *micButton;    // 录音按钮
 @property (nonatomic, weak) CWVoiceButton *playButton;   // 播放按钮
 @property (nonatomic, weak) CWVoiceButton *cancelButton; // 取消按钮
 @property (nonatomic, weak) CWAudioPlayView *playView;   // 播放界面
 @property (nonatomic, weak) UIImageView *voiceLine; // aio_voice_line
+
+@property (nonatomic, weak) UIPanGestureRecognizer *pan; // 手势
+
 @end
 
 static CGFloat const maxScale = 0.45;
@@ -78,6 +81,10 @@ static CGFloat const maxScale = 0.45;
     if (_stateView == nil) {
         CWRecordStateView *stateView = [[CWRecordStateView alloc] initWithFrame:CGRectMake(0, 10, self.cw_width, 50)];
 //        stateView.backgroundColor = [UIColor blueColor];
+        WeakSelf(self)
+        stateView.recordDurationProgress = ^(NSInteger progress) {
+            [weakself handleRecordDurationCallback:progress];
+        };
         [self addSubview:stateView];
         _stateView = stateView;
     }
@@ -114,6 +121,8 @@ static CGFloat const maxScale = 0.45;
         [btn addTarget:self action:@selector(sendRecorde:) forControlEvents:UIControlEventTouchUpInside];
         // 拖动手势
         UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
+        pan.delegate = self;
+        _pan = pan;
         [btn addGestureRecognizer:pan];
         
         btn.cw_centerX = self.cw_width / 2.0;
@@ -186,6 +195,15 @@ static CGFloat const maxScale = 0.45;
         self.stateView.recordState = CWRecordStateDefault;
         
     }
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if ( [gestureRecognizer isEqual:_pan] ) {
+        if (!self.micButton.isSelected) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 #pragma mark 按钮的形变以及动画
@@ -266,6 +284,13 @@ static CGFloat const maxScale = 0.45;
 // 开始录音
 - (void)starRecorde:(UIButton *)btn {
     NSLog(@"开始录音");
+    
+    btn.enabled = NO;
+    NSTimeInterval t = 0.3;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(t * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        btn.enabled = YES;
+    });
+    
     [CWRecorder shareInstance].delegate = self;
     btn.selected = YES;
     
@@ -302,6 +327,7 @@ static CGFloat const maxScale = 0.45;
             NSLog(@"发送录音111111");
         }else {
             NSLog(@"录音时间太短");
+            [CWFlieManager removeFile:[CWRecorder shareInstance].recordPath];
         }
     });
 }
@@ -331,6 +357,14 @@ static CGFloat const maxScale = 0.45;
 - (void)recorderFailed:(NSString *)failedMessage {
     self.stateView.recordState = CWRecordStateDefault;
     NSLog(@"失败：%@",failedMessage);
+}
+
+#pragma mark -
+- (void)handleRecordDurationCallback:(NSInteger)recordDuration {
+    NSLog(@"recordDuration -- %@", @(recordDuration));
+    if ( recordDuration > MaxRecordTime ) {
+        [self sendRecorde:_micButton];
+    }
 }
 
 @end
